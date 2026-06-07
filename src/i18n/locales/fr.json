@@ -1,0 +1,171 @@
+{
+  "app": {
+    "name": "NFC CRM",
+    "subtitle": "Sécurité Incendie & Maintenance"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "inventory": "Inventaire",
+    "clients": "Clients",
+    "equipment": "Équipements",
+    "interventions": "Interventions",
+    "contracts": "Contrats",
+    "invoices": "Factures & Devis",
+    "calendar": "Calendrier",
+    "technician": "Espace technicien",
+    "users": "Utilisateurs",
+    "trainings": "Formations HSE",
+    "activity": "Journal d'activité",
+    "myCompany": "Mon entreprise",
+    "settings": "Paramètres",
+    "reports": "Rapports",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "loginButton": "Se connecter",
+    "welcome": "Bienvenue sur NFC CRM",
+    "demoAccounts": "Comptes de démonstration",
+    "demoHint": "Cliquez sur un compte pour remplir le formulaire, puis connectez-vous."
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "totalClients": "Clients actifs",
+    "activeContracts": "Contrats actifs",
+    "upcomingInspections": "Inspections à venir",
+    "expiredMaintenance": "Maintenance expirée",
+    "equipmentIntervention": "Équipements à intervenir",
+    "monthlyRevenue": "Revenus du mois",
+    "pendingInvoices": "Factures en attente",
+    "recentActivities": "Activités récentes",
+    "upcomingInterventions": "Interventions planifiées",
+    "titleClient": "Mon tableau de bord",
+    "titleTechnician": "Mon espace technicien",
+    "myCompany": "Mon entreprise",
+    "viewMyProfile": "Voir ma fiche",
+    "myEquipment": "Mes équipements",
+    "mySites": "Mes sites",
+    "myUpcomingInterventions": "Mes interventions à venir",
+    "myEquipmentByCategory": "Mes équipements par catégorie",
+    "myPendingJobs": "Interventions en attente",
+    "myInProgress": "En cours",
+    "myCompletedMonth": "Terminées ce mois",
+    "mySchedule": "Mon planning",
+    "clientEquipment": "Équipements de mes clients",
+    "noUpcoming": "Aucune intervention planifiée",
+    "seeAllInterventions": "Voir toutes mes interventions"
+  },
+  "clients": {
+    "title": "Gestion des clients",
+    "add": "Nouveau client",
+    "companyName": "Raison sociale",
+    "ice": "ICE",
+    "contact": "Contact",
+    "phone": "Téléphone",
+    "email": "Email",
+    "city": "Ville",
+    "sector": "Secteur",
+    "status": "Statut"
+  },
+  "equipment": {
+    "title": "Équipements",
+    "addEquipment": "Ajouter équipement",
+    "requestEquipment": "Demander équipement",
+    "submitRequest": "Envoyer la demande",
+    "requestHint": "Votre demande sera envoyée à l'administrateur NFC pour validation.",
+    "pendingRequests": "Demandes clients en attente",
+    "myRequests": "Mes demandes",
+    "site": "Site / Bâtiment",
+    "equipmentNumber": "Numéro d'équipement",
+    "quantity": "Nombre d'équipements",
+    "categories": {
+      "extinguisher": "Extincteur",
+      "ria": "RIA",
+      "smoke_detector": "Détecteur de fumée",
+      "fire_alarm_panel": "Centrale alarme",
+      "sprinkler": "Sprinkler",
+      "emergency_lighting": "Éclairage de secours",
+      "safety_signage": "Signalisation",
+      "fire_door": "Porte coupe-feu",
+      "hydrant": "Poteau incendie",
+      "other": "Autre"
+    }
+  },
+  "contracts": {
+    "title": "Gestion des contrats",
+    "titleClient": "Mes contrats",
+    "requestContract": "Demander un contrat",
+    "addContract": "Nouveau contrat",
+    "submitRequest": "Envoyer la demande",
+    "requestHint": "Demande de nouveau contrat, renouvellement ou modification.",
+    "pendingRequests": "Demandes de contrat en attente",
+    "myRequests": "Mes demandes de contrat",
+    "status": {
+      "draft": "Brouillon",
+      "active": "Actif",
+      "expired": "Expiré",
+      "renewed": "Renouvelé",
+      "cancelled": "Annulé"
+    }
+  },
+  "interventions": {
+    "title": "Interventions & Maintenance",
+    "titleClient": "Mes interventions",
+    "titleTech": "Mes interventions assignées",
+    "requestIntervention": "Demander une intervention",
+    "addIntervention": "Planifier intervention",
+    "submitRequest": "Envoyer la demande",
+    "requestHint": "Décrivez votre besoin — l'administrateur planifiera l'intervention.",
+    "pendingRequests": "Demandes d'intervention en attente",
+    "myRequests": "Mes demandes d'intervention",
+    "types": {
+      "maintenance": "Maintenance",
+      "inspection": "Inspection",
+      "installation": "Installation",
+      "repair": "Réparation",
+      "audit": "Audit",
+      "emergency": "Urgence",
+      "hse": "Formation HSE"
+    },
+    "status": {
+      "pending": "En attente",
+      "planned": "Planifiée",
+      "in_progress": "En cours",
+      "completed": "Terminée",
+      "urgent": "Urgente",
+      "cancelled": "Annulée"
+    }
+  },
+  "invoices": {
+    "title": "Factures & Devis",
+    "titleClient": "Mes factures & devis",
+    "add": "Nouveau devis",
+    "clientHint": "Consultez vos factures et devis. Téléchargez les PDF pour vos archives."
+  },
+  "dialog": {
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "ok": "OK",
+    "confirmTitle": "Confirmation",
+    "alertTitle": "Information",
+    "deleteTitle": "Supprimer"
+  },
+  "common": {
+    "search": "Rechercher...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "export": "Exporter",
+    "loading": "Chargement...",
+    "noData": "Aucune donnée",
+    "actions": "Actions",
+    "all": "Tous",
+    "darkMode": "Mode sombre",
+    "language": "Langue"
+  }
+}

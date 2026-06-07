@@ -1,0 +1,119 @@
+{
+  "app": {
+    "name": "NFC CRM",
+    "subtitle": "السلامة من الحرائق والصيانة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "clients": "العملاء",
+    "equipment": "المعدات",
+    "interventions": "التدخلات",
+    "contracts": "العقود",
+    "invoices": "الفواتير والعروض",
+    "calendar": "التقويم",
+    "technician": "فضاء الفني",
+    "users": "المستخدمون",
+    "trainings": "التكوينات HSE",
+    "activity": "سجل النشاط",
+    "myCompany": "مؤسستي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "loginButton": "دخول",
+    "welcome": "مرحبا بكم في NFC CRM",
+    "demoAccounts": "حسابات تجريبية",
+    "demoHint": "انقر على حساب لملء النموذج ثم سجّل الدخول."
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "totalClients": "العملاء النشطون",
+    "activeContracts": "العقود النشطة",
+    "upcomingInspections": "الفحوصات القادمة",
+    "expiredMaintenance": "صيانة منتهية",
+    "equipmentIntervention": "معدات تحتاج تدخل",
+    "monthlyRevenue": "إيرادات الشهر",
+    "pendingInvoices": "فواتير معلقة",
+    "recentActivities": "الأنشطة الأخيرة",
+    "upcomingInterventions": "التدخلات المخططة",
+    "titleClient": "لوحة التحكم الخاصة بي",
+    "titleTechnician": "فضاء الفني",
+    "myCompany": "مؤسستي",
+    "viewMyProfile": "عرض ملفي",
+    "myEquipment": "معداتي",
+    "mySites": "مواقعي",
+    "myUpcomingInterventions": "تدخلاتي القادمة",
+    "myEquipmentByCategory": "معداتي حسب الفئة",
+    "myPendingJobs": "في الانتظار",
+    "myInProgress": "قيد التنفيذ",
+    "myCompletedMonth": "منتهية هذا الشهر",
+    "mySchedule": "جدولي",
+    "clientEquipment": "معدات عملائي",
+    "noUpcoming": "لا توجد تدخلات مخططة",
+    "seeAllInterventions": "عرض كل التدخلات"
+  },
+  "clients": {
+    "title": "إدارة العملاء",
+    "add": "عميل جديد",
+    "companyName": "اسم الشركة",
+    "ice": "ICE",
+    "contact": "جهة الاتصال",
+    "phone": "الهاتف",
+    "email": "البريد",
+    "city": "المدينة",
+    "sector": "القطاع",
+    "status": "الحالة"
+  },
+  "equipment": {
+    "title": "المعدات",
+    "categories": {
+      "extinguisher": "طفاية حريق",
+      "ria": "RIA",
+      "smoke_detector": "كاشف دخان",
+      "fire_alarm_panel": "لوحة إنذار",
+      "sprinkler": "رشاشات",
+      "emergency_lighting": "إضاءة طوارئ",
+      "safety_signage": "إشارات السلامة",
+      "fire_door": "باب مقاوم للحريق",
+      "hydrant": "عمود إطفاء"
+    }
+  },
+  "interventions": {
+    "title": "التدخلات والصيانة",
+    "status": {
+      "pending": "في الانتظار",
+      "planned": "مخططة",
+      "in_progress": "جارية",
+      "completed": "مكتملة",
+      "urgent": "عاجلة",
+      "cancelled": "ملغاة"
+    }
+  },
+  "dialog": {
+    "confirm": "تأكيد",
+    "cancel": "إلغاء",
+    "ok": "موافق",
+    "confirmTitle": "تأكيد",
+    "alertTitle": "معلومة",
+    "deleteTitle": "حذف"
+  },
+  "common": {
+    "search": "بحث...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "export": "تصدير",
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات",
+    "actions": "إجراءات",
+    "all": "الكل",
+    "darkMode": "الوضع الداكن",
+    "language": "اللغة"
+  }
+}
