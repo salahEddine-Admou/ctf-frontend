@@ -1,6 +1,8 @@
+import Loader from './Loader';
+
 export default function DataTable({ columns, data, onRowClick, loading }) {
   if (loading) {
-    return <div className="card text-center py-12 text-gray-500">Chargement...</div>;
+    return <Loader />;
   }
   if (!data?.length) {
     return <div className="card text-center py-12 text-gray-500">Aucune donnée</div>;

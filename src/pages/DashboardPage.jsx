@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { apiGet } from '../api/safeApi';
 import KpiCard from '../components/ui/KpiCard';
 import StatusBadge from '../components/ui/StatusBadge';
+import Loader from '../components/ui/Loader';
 import { formatCurrency, formatDate } from '../utils/constants';
 
 const COLORS = ['#C41E3A', '#374151', '#6B7280', '#F59E0B', '#10B981', '#3B82F6'];
@@ -276,7 +277,7 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
-  if (loading) return <div className="text-center py-20">{t('common.loading')}</div>;
+  if (loading) return <Loader text={t('common.loading')} />;
 
   if (!data) {
     return (
