@@ -26,6 +26,8 @@ export default function InvoicesPage() {
     type: 'quotation', client: '', items: [{ description: '', quantity: 1, unitPrice: 0 }], dueDate: '',
   });
 
+  const [pdfLoading, setPdfLoading] = useState(null);
+
   const load = async () => {
     setLoading(true);
     try {
@@ -53,17 +55,35 @@ export default function InvoicesPage() {
     return () => { cancelled = true; };
   }, [type, owner]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleCreate = async (e) => {
     e.preventDefault();
-    const amountHT = form.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-    await api.post('/invoices', { ...form, amountHT, vatRate: 20 });
-    setShowForm(false);
-    load();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const amountHT = form.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+      await api.post('/invoices', { ...form, amountHT, vatRate: 20 });
+      setShowForm(false);
+      load();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const generatePdf = async (id) => {
-    const { data } = await api.post(`/invoices/${id}/pdf`);
-    if (data.data.pdfUrl) openPdf(data.data.pdfUrl);
+    if (pdfLoading) return;
+    setPdfLoading(id);
+    try {
+      const { data } = await api.post(`/invoices/${id}/pdf`);
+      if (data.data?.pdfUrl) openPdf(data.data.pdfUrl);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPdfLoading(null);
+    }
   };
 
   const columns = [
@@ -80,8 +100,18 @@ export default function InvoicesPage() {
     { key: 'paymentStatus', label: 'Paiement', render: (r) => <StatusBadge status={r.paymentStatus} /> },
     {
       key: 'pdf', label: '', render: (r) => (
-        <button type="button" onClick={(e) => { e.stopPropagation(); generatePdf(r._id); }} className="text-nfc-red text-xs flex items-center gap-1">
-          <FileText className="w-3 h-3" /> PDF
+        <button 
+          type="button" 
+          onClick={(e) => { e.stopPropagation(); generatePdf(r._id); }} 
+          className="text-nfc-red text-xs flex items-center gap-1 disabled:opacity-50"
+          disabled={pdfLoading === r._id}
+        >
+          {pdfLoading === r._id ? (
+            <span className="w-3 h-3 border-2 border-nfc-red border-t-transparent rounded-full animate-spin"></span>
+          ) : (
+            <FileText className="w-3 h-3" />
+          )}
+          {pdfLoading === r._id ? 'Génération...' : 'PDF'}
         </button>
       ),
     },
@@ -226,7 +256,9 @@ export default function InvoicesPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full">Créer le document</button>
+            <button type="submit" disabled={isSubmitting} className="btn-primary w-full disabled:opacity-50">
+              {isSubmitting ? 'Création en cours...' : 'Créer le document'}
+            </button>
           </form>
         </Modal>
       )}

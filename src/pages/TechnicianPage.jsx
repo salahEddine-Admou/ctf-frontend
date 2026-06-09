@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { QrCode, Camera, CheckCircle, Play } from 'lucide-react';
+import { QrCode, Camera, CheckCircle, Play, Users, Star, Clock } from 'lucide-react';
 import api from '../api/axios';
 import { uploadFile } from '../api/upload';
 import { addToQueue, getQueue, syncQueue } from '../utils/offlineQueue';
@@ -16,6 +16,7 @@ export default function TechnicianPage() {
   const [pending, setPending] = useState(0);
   const [signId, setSignId] = useState(null);
   const [techStats, setTechStats] = useState(null);
+  const [allTechnicians, setAllTechnicians] = useState([]);
 
   const load = () => {
     api.get('/interventions', { params: { technician: user?._id, limit: 20 } })
@@ -24,13 +25,39 @@ export default function TechnicianPage() {
       .then(({ data }) => setTechStats(data.data?.stats));
   };
 
+  const [ratingModal, setRatingModal] = useState(null);
+  const [ratingScore, setRatingScore] = useState(5);
+  const [ratingFeedback, setRatingFeedback] = useState('');
+
+  const loadAdminData = () => {
+    api.get('/users', { params: { role: 'technician' } })
+      .then(({ data }) => setAllTechnicians(data.data));
+  };
+
+  const submitRating = async () => {
+    if (!ratingModal) return;
+    try {
+      await api.post(`/users/${ratingModal}/rate`, { score: Number(ratingScore), feedback: ratingFeedback });
+      setRatingModal(null);
+      setRatingScore(5);
+      setRatingFeedback('');
+      loadAdminData();
+    } catch (err) {
+      console.error("Failed to submit rating", err);
+    }
+  };
+
   useEffect(() => {
-    if (user) load();
+    if (user?.role === 'technician') {
+      load();
+    } else if (user) {
+      loadAdminData();
+    }
     setPending(getQueue().length);
     const sync = async () => {
       if (navigator.onLine && getQueue().length) {
         const r = await syncQueue(api);
-        if (r.synced) load();
+        if (r.synced && user?.role === 'technician') load();
         setPending(getQueue().length);
       }
     };
@@ -82,6 +109,102 @@ export default function TechnicianPage() {
     };
     input.click();
   };
+
+  if (user?.role !== 'technician') {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Users className="w-6 h-6 text-nfc-red" /> Équipe Technique
+            </h1>
+            <p className="text-gray-500">Vue d'ensemble des performances de vos techniciens.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allTechnicians.map(tech => (
+            <div key={tech._id} className="card p-5 border-t-4 border-t-nfc-red shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-full bg-nfc-red/10 flex items-center justify-center text-nfc-red font-bold text-xl">
+                  {tech.firstName?.[0]?.toUpperCase()}{tech.lastName?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">{tech.firstName} {tech.lastName}</h3>
+                  <p className="text-sm text-gray-500">{tech.email}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                  <span className="text-sm text-blue-700 font-medium">Interventions terminées</span>
+                  <span className="font-bold text-blue-800 text-lg">{tech.stats?.interventionsCompleted || 0}</span>
+                </div>
+                <div className="flex justify-between items-center bg-green-50/50 p-3 rounded-lg border border-green-100">
+                  <span className="text-sm text-green-700 font-medium flex items-center gap-1.5">
+                    <Star className="w-4 h-4" /> Note moyenne
+                  </span>
+                  <span className="font-bold text-green-800 text-lg">{tech.stats?.averageRating || 'N/A'} <span className="text-xs text-green-600 font-normal">/ 5</span></span>
+                </div>
+                <div className="flex justify-between items-center bg-purple-50/50 p-3 rounded-lg border border-purple-100">
+                  <span className="text-sm text-purple-700 font-medium flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" /> Ponctualité
+                  </span>
+                  <span className="font-bold text-purple-800 text-lg">{tech.stats?.punctualityScore || 100}%</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setRatingModal(tech._id)}
+                className="mt-5 w-full btn-secondary text-sm py-2"
+              >
+                Évaluer ce technicien
+              </button>
+            </div>
+          ))}
+          {allTechnicians.length === 0 && (
+            <div className="col-span-full text-center p-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              Aucun technicien trouvé dans le système.
+            </div>
+          )}
+        </div>
+
+        {ratingModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500" /> Évaluer le technicien
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Note (1 à 5)</label>
+                  <input 
+                    type="number" min="1" max="5" 
+                    className="input-field w-full"
+                    value={ratingScore} 
+                    onChange={e => setRatingScore(e.target.value)} 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Commentaire (optionnel)</label>
+                  <textarea 
+                    className="input-field w-full resize-none" rows="3"
+                    placeholder="Très bon travail, ponctuel..."
+                    value={ratingFeedback}
+                    onChange={e => setRatingFeedback(e.target.value)}
+                  ></textarea>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setRatingModal(null)} className="btn-secondary flex-1 py-2">Annuler</button>
+                  <button onClick={submitRating} className="btn-primary flex-1 py-2">Enregistrer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-lg mx-auto lg:max-w-none">

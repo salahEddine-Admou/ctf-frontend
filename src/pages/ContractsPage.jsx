@@ -30,9 +30,11 @@ export default function ContractsPage() {
   const [approveReq, setApproveReq] = useState(null);
   const [statusForm, setStatusForm] = useState({ status: 'active', notes: '' });
   const [approveForm, setApproveForm] = useState({ startDate: '', endDate: '', amount: '', status: 'active' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     client: '', title: '', startDate: '', endDate: '', amount: '', status: 'active',
     services: [{ name: 'Maintenance extincteurs', category: 'extinguisher', frequency: 'annual' }],
+    file: null,
   });
   const [requestForm, setRequestForm] = useState({
     requestType: 'new', title: '', description: '', desiredStartDate: '', desiredEndDate: '',
@@ -69,6 +71,8 @@ export default function ContractsPage() {
 
   const handleRequest = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const { data } = await api.post('/contract-requests', requestForm);
       setShowRequestForm(false);
@@ -76,11 +80,15 @@ export default function ContractsPage() {
       loadRequests();
       await alert({ title: 'Demande envoyée', message: data.message, variant: 'success' });
     } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur', variant: 'danger' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const submitApprove = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await api.put(`/contract-requests/${approveReq._id}/approve`, {
         ...approveForm,
@@ -92,7 +100,9 @@ export default function ContractsPage() {
       load();
       await alert({ title: 'Contrat créé', message: 'Le client a été notifié.', variant: 'success' });
     } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur', variant: 'danger' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -108,7 +118,7 @@ export default function ContractsPage() {
       await api.put(`/contracts/${contractId}`, { status, ...extra });
       await load();
     } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur', variant: 'danger' });
     }
   };
 
@@ -123,29 +133,51 @@ export default function ContractsPage() {
 
   const openManage = (contract) => {
     setManageContract(contract);
-    setStatusForm({ status: contract.status, notes: contract.notes || '' });
+    setStatusForm({ status: contract.status, notes: contract.notes || '', file: null });
   };
 
   const saveManage = async () => {
-    if (!owner) return;
+    if (!owner || isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      await api.put(`/contracts/${manageContract._id}`, { status: statusForm.status, notes: statusForm.notes });
+      let signedPdf = manageContract.signedPdf;
+      if (statusForm.file) {
+        const result = await uploadFile(statusForm.file, 'nfc-crm/contracts');
+        signedPdf = result.url;
+      }
+      await api.put(`/contracts/${manageContract._id}`, { status: statusForm.status, notes: statusForm.notes, signedPdf });
       setManageContract(null);
       await load();
       await alert({ title: 'Succès', message: 'Contrat mis à jour', variant: 'success' });
     } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur', variant: 'danger' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      await api.post('/contracts', { ...form, amount: Number(form.amount) });
+      let signedPdf = '';
+      if (form.file) {
+        const result = await uploadFile(form.file, 'nfc-crm/contracts');
+        signedPdf = result.url;
+      }
+      await api.post('/contracts', { ...form, amount: Number(form.amount), signedPdf });
       setShowForm(false);
+      setForm({
+        client: '', title: '', startDate: '', endDate: '', amount: '', status: 'active',
+        services: [{ name: 'Maintenance extincteurs', category: 'extinguisher', frequency: 'annual' }],
+        file: null,
+      });
       await load();
     } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur', variant: 'danger' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -280,7 +312,18 @@ export default function ContractsPage() {
                 <input type="date" className="input-field" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               </div>
               <input type="number" className="input-field" required placeholder="Montant MAD" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-              <button type="submit" className="btn-primary w-full">Créer</button>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Contrat signé (PDF)</label>
+                <input 
+                  type="file" 
+                  accept=".pdf"
+                  className="input-field text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-nfc-red hover:file:bg-red-100" 
+                  onChange={(e) => setForm({ ...form, file: e.target.files[0] })} 
+                />
+              </div>
+              <button type="submit" disabled={isSubmitting} className="btn-primary w-full disabled:opacity-50">
+                {isSubmitting ? 'Création...' : 'Créer'}
+              </button>
             </form>
           </Modal>
 
@@ -310,12 +353,23 @@ export default function ContractsPage() {
             <p className="font-medium">{manageContract.title}</p>
             <StatusBadge status={manageContract.status} />
             {manageContract.signedPdf && (
-              <a href={manageContract.signedPdf} target="_blank" rel="noreferrer" className="text-nfc-red hover:underline">Voir PDF signé</a>
+              <a href={manageContract.signedPdf} target="_blank" rel="noreferrer" className="text-nfc-red hover:underline block mb-2">Voir PDF signé</a>
             )}
             {owner && (
               <>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Contrat signé (PDF)</label>
+                  <input 
+                    type="file" 
+                    accept=".pdf"
+                    className="input-field text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-nfc-red hover:file:bg-red-100" 
+                    onChange={(e) => setStatusForm({ ...statusForm, file: e.target.files[0] })} 
+                  />
+                </div>
                 <textarea className="input-field" rows={2} value={statusForm.notes} onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })} placeholder="Notes" />
-                <button type="button" onClick={saveManage} className="btn-primary w-full">Enregistrer</button>
+                <button type="button" onClick={saveManage} disabled={isSubmitting} className="btn-primary w-full disabled:opacity-50">
+                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+                </button>
               </>
             )}
           </div>
