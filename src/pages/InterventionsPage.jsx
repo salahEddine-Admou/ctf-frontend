@@ -182,6 +182,7 @@ export default function InterventionsPage() {
       setDetail(res.data.data);
       load();
       await alert({ title: 'Rapport soumis', message: 'Le rapport est en attente d\'approbation.', variant: 'success' });
+      window.location.reload();
     } catch (err) {
       await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
     }
