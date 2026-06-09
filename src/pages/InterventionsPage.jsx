@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Plus, FileText, Send } from 'lucide-react';
+import { Plus, FileText, Send, Camera, X } from 'lucide-react';
 import api from '../api/axios';
 import { apiGet } from '../api/safeApi';
+import { uploadFile } from '../api/upload';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import SignaturePad from '../components/ui/SignaturePad';
@@ -42,6 +43,7 @@ export default function InterventionsPage() {
     site: '', type: 'maintenance', priority: 'normal', preferredDate: '', description: '',
   });
   const [approveForm, setApproveForm] = useState({ technician: '', scheduledDate: '', adminNote: '' });
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -183,6 +185,26 @@ export default function InterventionsPage() {
     } catch (err) {
       await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
     }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const uploaded = await uploadFile(file, 'nfc-crm/interventions');
+      setDetail({ ...detail, photos: [...(detail.photos || []), uploaded.url] });
+    } catch (err) {
+      await alert({ title: 'Erreur', message: 'Erreur lors du téléchargement du fichier', variant: 'danger' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePhoto = (index) => {
+    const newPhotos = [...(detail.photos || [])];
+    newPhotos.splice(index, 1);
+    setDetail({ ...detail, photos: newPhotos });
   };
 
   const approveFieldReport = async (e) => {
@@ -371,6 +393,32 @@ export default function InterventionsPage() {
                   <textarea className="input-field" rows={2} value={detail.recommendations || ''} onChange={(e) => setDetail({ ...detail, recommendations: e.target.value })} />
                 </div>
                 <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Photos / Pièces jointes</label>
+                  <div className="flex flex-wrap gap-3 mb-2 mt-2">
+                    {(detail.photos || []).map((photo, idx) => {
+                      const isImage = photo.match(/\.(jpeg|jpg|gif|png|webp)$/i) || photo.startsWith('data:image');
+                      return (
+                        <div key={idx} className="relative inline-block mt-2 mr-2">
+                          {isImage ? (
+                            <img src={photo} alt={`Fichier ${idx + 1}`} className="h-16 w-16 object-cover rounded border" />
+                          ) : (
+                            <div className="h-16 w-16 border rounded bg-gray-50 flex items-center justify-center">
+                              <FileText className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+                          <button type="button" onClick={() => removePhoto(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <label className="btn-secondary text-sm flex items-center gap-2 justify-center cursor-pointer w-fit mt-1">
+                    <Camera className="w-4 h-4" /> {uploading ? 'Téléchargement...' : 'Ajouter un fichier'}
+                    <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
+                  </label>
+                </div>
+                <div>
                   <p className="font-medium mb-2">Signature du Technicien</p>
                   {detail.signature ? <img src={detail.signature} alt="Signature" className="border rounded max-h-24" /> : <SignaturePad onSave={(s) => setDetail({ ...detail, signature: s })} />}
                 </div>
@@ -383,6 +431,25 @@ export default function InterventionsPage() {
                 <h3 className="font-semibold text-lg text-yellow-800 dark:text-yellow-500">Approbation Administrateur</h3>
                 <p><strong>Constats du technicien:</strong> {detail.findings}</p>
                 <p><strong>Recommandations:</strong> {detail.recommendations}</p>
+                {detail.photos && detail.photos.length > 0 && (
+                  <div>
+                    <p className="font-medium text-xs text-gray-500 mb-1">Pièces jointes:</p>
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {detail.photos.map((photo, idx) => {
+                        const isImage = photo.match(/\.(jpeg|jpg|gif|png|webp)$/i) || photo.startsWith('data:image');
+                        return isImage ? (
+                          <a key={idx} href={photo} target="_blank" rel="noreferrer">
+                            <img src={photo} alt="PJ" className="h-16 w-16 object-cover rounded border" />
+                          </a>
+                        ) : (
+                          <a key={idx} href={photo} target="_blank" rel="noreferrer" className="h-16 w-16 border rounded bg-white flex items-center justify-center hover:bg-gray-50">
+                            <FileText className="w-8 h-8 text-gray-500" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {detail.signature && <img src={detail.signature} alt="Signature Tech" className="border rounded max-h-24 bg-white" />}
                 
                 <div>
@@ -404,6 +471,25 @@ export default function InterventionsPage() {
                 <h3 className="font-semibold">Résumé</h3>
                 {detail.findings && <p><strong>Constats:</strong> {detail.findings}</p>}
                 {detail.adminNote && owner && <p><strong>Note Admin:</strong> {detail.adminNote}</p>}
+                {detail.photos && detail.photos.length > 0 && (
+                  <div>
+                    <p className="font-medium text-xs text-gray-500 mb-1">Pièces jointes:</p>
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {detail.photos.map((photo, idx) => {
+                        const isImage = photo.match(/\.(jpeg|jpg|gif|png|webp)$/i) || photo.startsWith('data:image');
+                        return isImage ? (
+                          <a key={idx} href={photo} target="_blank" rel="noreferrer">
+                            <img src={photo} alt="PJ" className="h-16 w-16 object-cover rounded border" />
+                          </a>
+                        ) : (
+                          <a key={idx} href={photo} target="_blank" rel="noreferrer" className="h-16 w-16 border rounded bg-white flex items-center justify-center hover:bg-gray-50">
+                            <FileText className="w-8 h-8 text-gray-500" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-4">
                   {detail.signature && <div><p className="text-xs text-gray-500">Tech</p><img src={detail.signature} className="max-h-16" /></div>}
                   {detail.adminSignature && <div><p className="text-xs text-gray-500">Admin</p><img src={detail.adminSignature} className="max-h-16" /></div>}
