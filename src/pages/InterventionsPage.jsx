@@ -327,7 +327,7 @@ export default function InterventionsPage() {
             <option value="normal">Priorité normale</option>
             <option value="urgent">Urgent</option>
           </select>
-          <input type="datetime-local" className="input-field" value={requestForm.preferredDate}
+          <input type="datetime-local" lang="fr-FR" className="input-field" value={requestForm.preferredDate}
             onChange={(e) => setRequestForm({ ...requestForm, preferredDate: e.target.value })} />
           <textarea className="input-field min-h-[100px]" required placeholder="Décrivez le besoin..."
             value={requestForm.description} onChange={(e) => setRequestForm({ ...requestForm, description: e.target.value })} />
@@ -349,7 +349,7 @@ export default function InterventionsPage() {
             <select className="input-field" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
               {INT_TYPES.map((x) => <option key={x} value={x}>{x}</option>)}
             </select>
-            <input type="datetime-local" className="input-field" required value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
+            <input type="datetime-local" lang="fr-FR" className="input-field" required value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
             <textarea className="input-field" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <button type="submit" className="btn-primary w-full">Créer</button>
           </form>
@@ -362,7 +362,7 @@ export default function InterventionsPage() {
             <option value="">Assigner un technicien</option>
             {technicians.map((u) => <option key={u._id} value={u._id}>{u.firstName} {u.lastName}</option>)}
           </select>
-          <input type="datetime-local" className="input-field" value={approveForm.scheduledDate}
+          <input type="datetime-local" lang="fr-FR" className="input-field" value={approveForm.scheduledDate}
             onChange={(e) => setApproveForm({ ...approveForm, scheduledDate: e.target.value })} />
           <button type="button" onClick={submitApprove} className="btn-primary w-full">Planifier l&apos;intervention</button>
         </div>

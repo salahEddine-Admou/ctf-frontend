@@ -104,7 +104,7 @@ export default function TrainingsPage() {
             <option value="">Formateur</option>
             {users.map((u) => <option key={u._id} value={u._id}>{u.firstName} {u.lastName}</option>)}
           </select>
-          <input type="datetime-local" className="input-field" required value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
+          <input type="datetime-local" lang="fr-FR" className="input-field" required value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
           <input className="input-field" placeholder="Lieu" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <input className="input-field" placeholder="Ville" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           <button type="submit" className="btn-primary w-full">Créer</button>

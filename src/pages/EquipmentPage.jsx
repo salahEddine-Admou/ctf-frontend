@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { QrCode, Plus, Download, Send, Check, X } from 'lucide-react';
+import { QrCode, Plus, Download, Send, Check, X, Edit2, Trash2 } from 'lucide-react';
 import api from '../api/axios';
 import { apiGet } from '../api/safeApi';
 import DataTable from '../components/ui/DataTable';
@@ -61,6 +61,7 @@ export default function EquipmentPage() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [qrModal, setQrModal] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
   const [requestForm, setRequestForm] = useState(emptyRequest);
   const [savingRequest, setSavingRequest] = useState(false);
 
@@ -142,7 +143,7 @@ export default function EquipmentPage() {
     loadSitesFor(clientId);
   };
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
       ...form,
@@ -151,18 +152,63 @@ export default function EquipmentPage() {
       salePrice: form.salePrice ? Number(form.salePrice) : undefined,
       quantity: Number(form.quantity) || 1,
     };
-    const { data } = await api.post('/equipment', payload);
-    setShowForm(false);
-    setForm(emptyForm);
-    setSites([]);
-    if (data.qrImage) {
-      setQrModal({
-        qrImage: data.qrImage,
-        qrCode: data.data?.qrCode,
-        message: data.created > 1 ? `${data.created} équipements créés` : null,
-      });
+    try {
+      if (editingId) {
+        await api.put(`/equipment/${editingId}`, payload);
+      } else {
+        const { data } = await api.post('/equipment', payload);
+        if (data.qrImage) {
+          setQrModal({
+            qrImage: data.qrImage,
+            qrCode: data.data?.qrCode,
+            message: data.created > 1 ? `${data.created} équipements créés` : null,
+          });
+        }
+      }
+      setShowForm(false);
+      setForm(emptyForm);
+      setEditingId(null);
+      setSites([]);
+      loadEquipments();
+    } catch (err) {
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Erreur lors de l\'enregistrement', variant: 'danger' });
     }
-    loadEquipments();
+  };
+
+  const handleDelete = async (id) => {
+    const ok = await confirm({
+      title: 'Supprimer',
+      message: 'Voulez-vous vraiment supprimer cet équipement ?',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/equipment/${id}`);
+      loadEquipments();
+    } catch (err) {
+      await alert({ title: 'Erreur', message: 'Impossible de supprimer l\'équipement', variant: 'danger' });
+    }
+  };
+
+  const openEdit = (eq) => {
+    setEditingId(eq._id);
+    setForm({
+      client: eq.client?._id || eq.client || '',
+      site: eq.site?._id || eq.site || '',
+      category: eq.category || 'extinguisher',
+      brand: eq.brand || '',
+      model: eq.model || '',
+      equipmentNumber: eq.equipmentNumber || '',
+      serialNumber: eq.serialNumber || '',
+      product: eq.product?._id || eq.product || '',
+      salePrice: eq.salePrice || '',
+      quantity: 1,
+      location: eq.location || '',
+      installationDate: eq.installationDate ? new Date(eq.installationDate).toISOString().split('T')[0] : '',
+      status: eq.status || 'operational',
+    });
+    if (eq.client) loadSitesFor(eq.client?._id || eq.client);
+    setShowForm(true);
   };
 
   const handleRequest = async (e) => {
@@ -230,6 +276,7 @@ export default function EquipmentPage() {
 
   const openForm = () => {
     setForm(emptyForm);
+    setEditingId(null);
     setSites([]);
     setShowForm(true);
   };
@@ -251,8 +298,23 @@ export default function EquipmentPage() {
         <QrCode className="w-3 h-3" />{r.qrCode}
       </button>
     )},
-    { key: 'nextInspection', label: 'Prochaine inspection', render: (r) => formatDate(r.nextInspection) },
+    { key: 'installationDate', label: "Date d'installation", render: (r) => formatDate(r.installationDate) },
+    { key: 'nextInspection', label: 'Prochaine inspection', render: (r) => {
+      if (r.nextInspection) return formatDate(r.nextInspection);
+      if (r.installationDate) {
+        const d = new Date(r.installationDate);
+        d.setFullYear(d.getFullYear() + 1);
+        return formatDate(d.toISOString());
+      }
+      return '-';
+    }},
     { key: 'status', label: 'Statut', render: (r) => <StatusBadge status={r.status} /> },
+    ...(owner ? [{ key: 'actions', label: '', render: (r) => (
+      <div className="flex gap-2 justify-end">
+        <button type="button" onClick={(e) => { e.stopPropagation(); openEdit(r); }} className="p-1 text-gray-400 hover:text-blue-600"><Edit2 className="w-4 h-4" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleDelete(r._id); }} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+      </div>
+    )}] : []),
   ];
 
   const pendingForAdmin = requests.filter((r) => r.status === 'pending');
@@ -395,8 +457,8 @@ export default function EquipmentPage() {
       </Modal>
 
       {!clientUser && (
-        <Modal open={showForm} onClose={() => setShowForm(false)} title={t('equipment.addEquipment')} wide>
-          <form onSubmit={handleCreate} className="space-y-3">
+        <Modal open={showForm} onClose={() => setShowForm(false)} title={editingId ? 'Modifier l\'équipement' : t('equipment.addEquipment')} wide>
+          <form onSubmit={handleSubmit} className="space-y-3">
             {owner && (
               <div>
                 <label className="text-xs font-medium text-gray-500 mb-1 block">Client *</label>
@@ -451,12 +513,18 @@ export default function EquipmentPage() {
               <input className="input-field" placeholder="N° équipement" value={form.equipmentNumber} onChange={(e) => setForm({ ...form, equipmentNumber: e.target.value })} />
               <input className="input-field" placeholder="N° série" value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} />
             </div>
-            <div>
-              <label className="text-xs font-medium text-gray-500 mb-1 block">Quantité</label>
-              <input type="number" min={1} max={100} className="input-field" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Date d'installation</label>
+                <input type="date" className="input-field" value={form.installationDate} onChange={(e) => setForm({ ...form, installationDate: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Quantité</label>
+                <input type="number" min={1} max={100} className="input-field" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+              </div>
             </div>
             <input className="input-field" placeholder="Emplacement" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-            <button type="submit" className="btn-primary w-full">{t('equipment.addEquipment')}</button>
+            <button type="submit" className="btn-primary w-full">{editingId ? 'Mettre à jour' : t('equipment.addEquipment')}</button>
           </form>
         </Modal>
       )}

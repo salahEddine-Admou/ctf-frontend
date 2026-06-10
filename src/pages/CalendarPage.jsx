@@ -17,7 +17,10 @@ export default function CalendarPage() {
   }, []);
 
   const grouped = interventions.reduce((acc, i) => {
-    const day = new Date(i.scheduledDate).toDateString();
+    const dateObj = new Date(i.scheduledDate);
+    const dayStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const day = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+    
     if (!acc[day]) acc[day] = [];
     acc[day].push(i);
     return acc;
