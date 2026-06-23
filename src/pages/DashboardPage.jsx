@@ -32,7 +32,7 @@ function AdminDashboard({ data, t }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="font-semibold mb-4">Revenus mensuels (MAD)</h3>
+          <h3 className="font-semibold mb-4">{t('dashboard.monthlyRevenueChart', 'Revenus mensuels (MAD)')}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={charts?.revenueByMonth?.map((r) => ({ month: `M${r._id}`, revenue: r.revenue })) || []}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -44,7 +44,7 @@ function AdminDashboard({ data, t }) {
           </ResponsiveContainer>
         </div>
         <div className="card">
-          <h3 className="font-semibold mb-4">Équipements par catégorie</h3>
+          <h3 className="font-semibold mb-4">{t('dashboard.equipmentByCategory', 'Équipements par catégorie')}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie data={charts?.equipmentByCategory?.map((e) => ({ name: e._id, value: e.count }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -102,7 +102,7 @@ function AdminDashboard({ data, t }) {
 
       {technicianActivities?.length > 0 && (
         <div className="card">
-          <h3 className="font-semibold mb-4">Techniciens en intervention</h3>
+          <h3 className="font-semibold mb-4">{t('dashboard.techniciansIntervention', 'Techniciens en intervention')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {technicianActivities.map((tech, i) => (
               <div key={i} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm">
