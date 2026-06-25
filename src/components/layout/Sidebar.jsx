@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { X } from 'lucide-react';
 import {
   LayoutDashboard, Users, Wrench, ClipboardList, FileText,
-  Receipt, Calendar, HardHat, Settings, GraduationCap, History, Building2, Package, BarChart3
+  Receipt, Calendar, HardHat, Settings, GraduationCap, History, Building2, Package, BarChart3, Truck
 } from 'lucide-react';
 import Logo from '../ui/Logo';
 
@@ -22,6 +22,7 @@ const navItems = [
   { to: '/invoices', icon: Receipt, key: 'invoices', show: (r) => isOwner(r) || isClient(r) },
   { to: '/reports', icon: BarChart3, key: 'reports', show: (r) => isOwner(r) },
   { to: '/inventory', icon: Package, key: 'inventory', show: (r) => isOwner(r) },
+  { to: '/suppliers', icon: Truck, key: 'suppliers', show: (r) => isOwner(r) },
   { to: '/calendar', icon: Calendar, key: 'calendar', show: (r) => isOwner(r) || isTech(r) },
   { to: '/trainings', icon: GraduationCap, key: 'trainings', show: (r) => isOwner(r) },
   { to: '/technician', icon: HardHat, key: 'technician', show: (r) => isTech(r) || isOwner(r) },

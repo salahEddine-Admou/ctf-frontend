@@ -21,6 +21,15 @@ export const fetchMe = createAsyncThunk('auth/me', async (_, { rejectWithValue }
   }
 });
 
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (payload, { rejectWithValue }) => {
+  try {
+    const { data } = await api.put('/auth/update-profile', payload);
+    return data.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+  }
+});
+
 const storedUser = localStorage.getItem('user');
 const authSlice = createSlice({
   name: 'auth',
@@ -51,7 +60,11 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(fetchMe.fulfilled, (state, action) => { state.user = action.payload; });
+      .addCase(fetchMe.fulfilled, (state, action) => { state.user = action.payload; })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem('user', JSON.stringify(state.user));
+      });
   },
 });
 

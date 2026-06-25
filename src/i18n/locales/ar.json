@@ -5,6 +5,8 @@
   },
   "nav": {
     "dashboard": "لوحة التحكم",
+    "inventory": "المخزون",
+    "suppliers": "الموردون",
     "clients": "العملاء",
     "equipment": "المعدات",
     "interventions": "التدخلات",

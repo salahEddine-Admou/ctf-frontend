@@ -1,14 +1,13 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
-import { Bell, Moon, Sun, Search, LogOut, Globe, Menu } from 'lucide-react';
-import { logout } from '../../store/slices/authSlice';
+import { Bell, Moon, Sun, Search, Globe, Menu } from 'lucide-react';
 import { toggleDarkMode, setLanguage } from '../../store/slices/themeSlice';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import api from '../../api/axios';
-import { ROLE_LABELS } from '../../utils/constants';
 import NotificationPanel from './NotificationPanel';
+import ProfileMenu from './ProfileMenu';
 
 const searchRoutes = {
   clients: (id) => `/clients/${id}`,
@@ -110,18 +109,7 @@ export default function Header({ onMenuClick }) {
           </button>
           <NotificationPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
         </div>
-        <div className="flex items-center gap-2 pl-3 border-l border-gray-200 dark:border-gray-600">
-          <div className="w-8 h-8 bg-nfc-red rounded-full flex items-center justify-center text-white text-sm font-medium">
-            {user?.firstName?.[0]}{user?.lastName?.[0]}
-          </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
-            <p className="text-xs text-gray-500">{ROLE_LABELS[user?.role]}</p>
-          </div>
-          <button onClick={() => { dispatch(logout()); navigate('/login'); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500" title={t('nav.logout')}>
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
+        <ProfileMenu />
       </div>
     </header>
   );

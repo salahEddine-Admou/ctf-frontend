@@ -50,6 +50,19 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
+          <div className="mt-12">
+            <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-3">
+              Certifications &amp; audit
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="bg-white rounded-lg p-2 flex items-center justify-center h-16 w-32">
+                <img src="/cert-imanor.png" alt="Certification IMANOR - Institut Marocain de Normalisation" className="max-h-12 max-w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-lg p-2 flex items-center justify-center h-16 w-16">
+                <img src="/cert-nm.png" alt="Certification NM Services" className="max-h-12 max-w-full object-contain" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -119,6 +132,16 @@ export default function LoginPage() {
               })}
             </div>
             <p className="mt-3 text-[11px] text-gray-400 text-center">{t('auth.demoHint')}</p>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 text-center mb-3">
+              Entreprise certifiée
+            </p>
+            <div className="flex items-center justify-center gap-6">
+              <img src="/cert-imanor.png" alt="Certification IMANOR - Institut Marocain de Normalisation" className="h-10 w-auto object-contain" />
+              <img src="/cert-nm.png" alt="Certification NM Services" className="h-12 w-auto object-contain" />
+            </div>
           </div>
         </div>
       </div>

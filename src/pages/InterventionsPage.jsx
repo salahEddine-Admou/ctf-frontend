@@ -1,21 +1,58 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Plus, FileText, Send, Camera, X } from 'lucide-react';
+import { Plus, FileText, Send } from 'lucide-react';
 import api from '../api/axios';
 import { apiGet } from '../api/safeApi';
-import { uploadFile } from '../api/upload';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import SignaturePad from '../components/ui/SignaturePad';
 import StatusBadge from '../components/ui/StatusBadge';
 import { PendingRequestsPanel, MyRequestsList } from '../components/ui/RequestPanel';
+import ReportWizard from '../components/interventions/ReportWizard';
 import { formatDate } from '../utils/constants';
 import { openPdf } from '../utils/exportDownload';
 import { useDialog } from '../context/DialogContext';
 import { isOwner, isClient, isTechnician } from '../utils/roles';
 
 const INT_TYPES = ['maintenance', 'inspection', 'installation', 'repair', 'audit', 'emergency', 'hse'];
+
+const REPORT_DEFS = [
+  { key: 'v14', code: 'V14', label: 'Vérification' },
+  { key: 'c14', code: 'C14', label: 'Maintenance' },
+  { key: 'q4', code: 'Q4', label: 'Compte rendu' },
+];
+
+function ReportsOverview({ intervention, onPdf }) {
+  const reports = intervention.reports || {};
+  const any = REPORT_DEFS.some((d) => (reports[d.key]?.items || []).length);
+  if (!any) return <p className="text-sm text-gray-500">Aucun rapport V14 / C14 / Q4 saisi.</p>;
+  return (
+    <div className="space-y-2">
+      {REPORT_DEFS.map((d) => {
+        const sec = reports[d.key] || {};
+        const count = (sec.items || []).length;
+        if (!count) return null;
+        const syn = sec.synthesis || {};
+        const nc = syn.conclusionGlobale === 'NON CONFORME';
+        return (
+          <div key={d.key} className="flex items-center justify-between gap-3 border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900">
+            <div className="min-w-0">
+              <p className="font-medium">{d.code} — {d.label} <span className="text-gray-400 font-normal">({count} ligne{count > 1 ? 's' : ''})</span></p>
+              <p className="text-xs text-gray-500">
+                {sec.reference || '—'} · Conformes {syn.conformes || 0}/{syn.total || 0} ·{' '}
+                <span className={nc ? 'text-nfc-red font-semibold' : 'text-green-700 font-semibold'}>{syn.conclusionGlobale || '—'}</span>
+              </p>
+            </div>
+            <button type="button" onClick={() => onPdf(intervention._id, d.key)} className="text-nfc-red text-xs flex items-center gap-1 shrink-0">
+              <FileText className="w-3.5 h-3.5" /> PDF
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function InterventionsPage() {
   const { t } = useTranslation();
@@ -43,7 +80,6 @@ export default function InterventionsPage() {
     site: '', type: 'maintenance', priority: 'normal', preferredDate: '', description: '',
   });
   const [approveForm, setApproveForm] = useState({ technician: '', scheduledDate: '', adminNote: '' });
-  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -146,21 +182,13 @@ export default function InterventionsPage() {
     load();
   };
 
-  const saveSignature = async (dataUrl) => {
-    await api.put(`/interventions/${detail._id}`, {
-      signature: dataUrl,
-      signedBy: clientUser ? 'Client' : 'Responsable',
-      signedAt: new Date().toISOString(),
-    });
-    const res = await api.get(`/interventions/${detail._id}`);
-    setDetail(res.data.data);
-  };
-
-  const updateStatus = async (status) => {
-    await api.put(`/interventions/${detail._id}`, { status });
-    const res = await api.get(`/interventions/${detail._id}`);
-    setDetail(res.data.data);
-    load();
+  const generateTypedPdf = async (id, type) => {
+    try {
+      const { data } = await api.post(`/interventions/${id}/report`, { type });
+      if (data.data.reportPdf) openPdf(data.data.reportPdf);
+    } catch (err) {
+      await alert({ title: 'Erreur', message: err.response?.data?.message || 'Rapport indisponible', variant: 'danger' });
+    }
   };
 
   const techAction = async (action) => {
@@ -172,40 +200,6 @@ export default function InterventionsPage() {
     } catch (err) {
       await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
     }
-  };
-
-  const submitFieldReport = async (e) => {
-    e.preventDefault();
-    try {
-      await api.put(`/interventions/${detail._id}/submit`, detail);
-      const res = await api.get(`/interventions/${detail._id}`);
-      setDetail(res.data.data);
-      load();
-      await alert({ title: 'Rapport soumis', message: 'Le rapport est en attente d\'approbation.', variant: 'success' });
-      window.location.reload();
-    } catch (err) {
-      await alert({ title: 'Erreur', message: err.response?.data?.message, variant: 'danger' });
-    }
-  };
-
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const uploaded = await uploadFile(file, 'nfc-crm/interventions');
-      setDetail({ ...detail, photos: [...(detail.photos || []), uploaded.url] });
-    } catch (err) {
-      await alert({ title: 'Erreur', message: 'Erreur lors du téléchargement du fichier', variant: 'danger' });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removePhoto = (index) => {
-    const newPhotos = [...(detail.photos || [])];
-    newPhotos.splice(index, 1);
-    setDetail({ ...detail, photos: newPhotos });
   };
 
   const approveFieldReport = async (e) => {
@@ -383,55 +377,18 @@ export default function InterventionsPage() {
             )}
 
             {techUser && (detail.status === 'accepted' || detail.status === 'in_progress') && (
-              <form onSubmit={submitFieldReport} className="space-y-4 border-t pt-4">
-                <h3 className="font-semibold text-lg">Rapport de terrain</h3>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Constats et observations</label>
-                  <textarea className="input-field" rows={3} required value={detail.findings || ''} onChange={(e) => setDetail({ ...detail, findings: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Recommandations</label>
-                  <textarea className="input-field" rows={2} value={detail.recommendations || ''} onChange={(e) => setDetail({ ...detail, recommendations: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Photos / Pièces jointes</label>
-                  <div className="flex flex-wrap gap-3 mb-2 mt-2">
-                    {(detail.photos || []).map((photo, idx) => {
-                      const isImage = photo.match(/\.(jpeg|jpg|gif|png|webp)$/i) || photo.startsWith('data:image');
-                      return (
-                        <div key={idx} className="relative inline-block mt-2 mr-2">
-                          {isImage ? (
-                            <img src={photo} alt={`Fichier ${idx + 1}`} className="h-16 w-16 object-cover rounded border" />
-                          ) : (
-                            <div className="h-16 w-16 border rounded bg-gray-50 flex items-center justify-center">
-                              <FileText className="w-8 h-8 text-gray-400" />
-                            </div>
-                          )}
-                          <button type="button" onClick={() => removePhoto(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <label className="btn-secondary text-sm flex items-center gap-2 justify-center cursor-pointer w-fit mt-1">
-                    <Camera className="w-4 h-4" /> {uploading ? 'Téléchargement...' : 'Ajouter un fichier'}
-                    <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
-                  </label>
-                </div>
-                <div>
-                  <p className="font-medium mb-2">Signature du Technicien</p>
-                  {detail.signature ? <img src={detail.signature} alt="Signature" className="border rounded max-h-24" /> : <SignaturePad onSave={(s) => setDetail({ ...detail, signature: s })} />}
-                </div>
-                <button type="submit" className="btn-primary w-full" disabled={!detail.signature}>Soumettre le rapport pour approbation</button>
-              </form>
+              <ReportWizard intervention={detail} onUpdated={(d) => { setDetail(d); load(); }} />
             )}
 
             {owner && detail.status === 'awaiting_approval' && (
               <form onSubmit={approveFieldReport} className="space-y-4 border-t pt-4 bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg">
                 <h3 className="font-semibold text-lg text-yellow-800 dark:text-yellow-500">Approbation Administrateur</h3>
-                <p><strong>Constats du technicien:</strong> {detail.findings}</p>
-                <p><strong>Recommandations:</strong> {detail.recommendations}</p>
+                <div>
+                  <p className="font-medium text-sm mb-2">Rapports soumis par le technicien</p>
+                  <ReportsOverview intervention={detail} onPdf={generateTypedPdf} />
+                </div>
+                {detail.findings && <p><strong>Constats du technicien:</strong> {detail.findings}</p>}
+                {detail.recommendations && <p><strong>Recommandations:</strong> {detail.recommendations}</p>}
                 {detail.photos && detail.photos.length > 0 && (
                   <div>
                     <p className="font-medium text-xs text-gray-500 mb-1">Pièces jointes:</p>
@@ -470,6 +427,7 @@ export default function InterventionsPage() {
             {(detail.status === 'completed' || detail.status === 'awaiting_approval') && (
               <div className="space-y-4 mt-4 border-t pt-4">
                 <h3 className="font-semibold">Résumé</h3>
+                <ReportsOverview intervention={detail} onPdf={generateTypedPdf} />
                 {detail.findings && <p><strong>Constats:</strong> {detail.findings}</p>}
                 {detail.adminNote && owner && <p><strong>Note Admin:</strong> {detail.adminNote}</p>}
                 {detail.photos && detail.photos.length > 0 && (
@@ -495,8 +453,8 @@ export default function InterventionsPage() {
                   {detail.signature && <div><p className="text-xs text-gray-500">Tech</p><img src={detail.signature} className="max-h-16" /></div>}
                   {detail.adminSignature && <div><p className="text-xs text-gray-500">Admin</p><img src={detail.adminSignature} className="max-h-16" /></div>}
                 </div>
-                <button type="button" onClick={() => generatePdf(detail._id)} className="btn-primary flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Rapport PDF
+                <button type="button" onClick={() => generatePdf(detail._id)} className="btn-secondary flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Rapport global PDF
                 </button>
               </div>
             )}

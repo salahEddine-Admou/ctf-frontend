@@ -18,6 +18,7 @@ import UsersPage from './pages/UsersPage';
 import TrainingsPage from './pages/TrainingsPage';
 import ActivityPage from './pages/ActivityPage';
 import InventoryPage from './pages/InventoryPage';
+import SuppliersPage from './pages/SuppliersPage';
 import SalesReportsPage from './pages/SalesReportsPage';
 
 export default function App() {
@@ -53,6 +54,11 @@ export default function App() {
           <Route path="contracts" element={<ContractsPage />} />
           <Route path="invoices" element={<InvoicesPage />} />
           <Route path="inventory" element={<InventoryPage />} />
+          <Route path="suppliers" element={
+            <ProtectedRoute roles={['super_admin', 'admin', 'accountant']}>
+              <SuppliersPage />
+            </ProtectedRoute>
+          } />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="trainings" element={<TrainingsPage />} />
           <Route path="technician" element={
