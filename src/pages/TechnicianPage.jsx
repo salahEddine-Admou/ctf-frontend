@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { QrCode, Camera, CheckCircle, Play, Users, Star, Clock } from 'lucide-react';
+import { QrCode, Camera, CheckCircle, Play, Users, Star, Clock, Pencil } from 'lucide-react';
 import api from '../api/axios';
 import { uploadFile } from '../api/upload';
 import { addToQueue, getQueue, syncQueue } from '../utils/offlineQueue';
@@ -28,10 +28,28 @@ export default function TechnicianPage() {
   const [ratingModal, setRatingModal] = useState(null);
   const [ratingScore, setRatingScore] = useState(5);
   const [ratingFeedback, setRatingFeedback] = useState('');
+  const [punctModal, setPunctModal] = useState(null);
+  const [punctValue, setPunctValue] = useState(100);
 
   const loadAdminData = () => {
     api.get('/users', { params: { role: 'technician' } })
       .then(({ data }) => setAllTechnicians(data.data));
+  };
+
+  const openPunctuality = (tech) => {
+    setPunctModal(tech._id);
+    setPunctValue(tech.stats?.punctualityScore ?? 100);
+  };
+
+  const submitPunctuality = async () => {
+    if (!punctModal) return;
+    try {
+      await api.put(`/users/${punctModal}/punctuality`, { punctualityScore: Number(punctValue) });
+      setPunctModal(null);
+      loadAdminData();
+    } catch (err) {
+      console.error('Failed to update punctuality', err);
+    }
   };
 
   const submitRating = async () => {
@@ -150,7 +168,17 @@ export default function TechnicianPage() {
                   <span className="text-sm text-purple-700 font-medium flex items-center gap-1.5">
                     <Clock className="w-4 h-4" /> Ponctualité
                   </span>
-                  <span className="font-bold text-purple-800 text-lg">{tech.stats?.punctualityScore || 100}%</span>
+                  <span className="flex items-center gap-2">
+                    <span className="font-bold text-purple-800 text-lg">{tech.stats?.punctualityScore ?? 100}%</span>
+                    <button
+                      type="button"
+                      onClick={() => openPunctuality(tech)}
+                      className="p-1 rounded-md text-purple-500 hover:bg-purple-100 hover:text-purple-700"
+                      title="Modifier la ponctualité"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </span>
                 </div>
               </div>
 
@@ -197,6 +225,32 @@ export default function TechnicianPage() {
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setRatingModal(null)} className="btn-secondary flex-1 py-2">Annuler</button>
                   <button onClick={submitRating} className="btn-primary flex-1 py-2">Enregistrer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {punctModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-purple-600" /> Score de ponctualité
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ponctualité (0 à 100 %)</label>
+                  <input
+                    type="number" min="0" max="100"
+                    className="input-field w-full"
+                    value={punctValue}
+                    onChange={(e) => setPunctValue(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Défini manuellement par l&apos;administrateur.</p>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setPunctModal(null)} className="btn-secondary flex-1 py-2">Annuler</button>
+                  <button onClick={submitPunctuality} className="btn-primary flex-1 py-2">Enregistrer</button>
                 </div>
               </div>
             </div>
