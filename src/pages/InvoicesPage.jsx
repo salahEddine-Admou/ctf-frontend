@@ -25,7 +25,7 @@ export default function InvoicesPage() {
   const [showForm, setShowForm] = useState(false);
   const [clients, setClients] = useState([]);
   const [form, setForm] = useState({
-    type: 'quotation', client: '', items: [emptyItem()], dueDate: '',
+    type: 'quotation', client: '', clientName: '', items: [emptyItem()], dueDate: '',
   });
 
   const [pdfLoading, setPdfLoading] = useState(null);
@@ -65,12 +65,24 @@ export default function InvoicesPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+    const isPassager = !form.client;
+    if (!form.client && !form.clientName) {
+      alert('Sélectionnez un client ou choisissez « Passager ».');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const amountHT = form.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-      await api.post('/invoices', { ...form, amountHT, vatRate: 20 });
+      const payload = {
+        ...form,
+        client: isPassager ? undefined : form.client,
+        clientName: isPassager ? (form.clientName || 'Passager') : undefined,
+        amountHT,
+        vatRate: 20,
+      };
+      await api.post('/invoices', payload);
       setShowForm(false);
-      setForm({ type: 'quotation', client: '', items: [emptyItem()], dueDate: '' });
+      setForm({ type: 'quotation', client: '', clientName: '', items: [emptyItem()], dueDate: '' });
       load();
     } catch (err) {
       console.error(err);
@@ -152,8 +164,10 @@ export default function InvoicesPage() {
     { key: 'type', label: 'Type', render: (r) => docLabel(r) },
     ...(owner ? [{ key: 'client', label: 'Client', render: (r) => (
       <div>
-        <p>{r.client?.companyName}</p>
-        {r.client?.customerId && <p className="text-xs text-gray-500 font-mono">{r.client.customerId}</p>}
+        <p>{r.client?.companyName || r.clientName || '-'}</p>
+        {r.client?.customerId
+          ? <p className="text-xs text-gray-500 font-mono">{r.client.customerId}</p>
+          : (!r.client && r.clientName) ? <p className="text-xs text-gray-400">Passager</p> : null}
       </div>
     ) }] : []),
     { key: 'amountTTC', label: 'Montant TTC', render: (r) => formatCurrency(r.amountTTC) },
@@ -284,7 +298,7 @@ export default function InvoicesPage() {
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-3">
               <StatusBadge status={detail.type === 'quotation' ? (detail.quoteStatus || 'draft') : detail.paymentStatus} />
-              {detail.client?.companyName && <span className="text-sm text-gray-500">{detail.client.companyName}</span>}
+              {(detail.client?.companyName || detail.clientName) && <span className="text-sm text-gray-500">{detail.client?.companyName || `${detail.clientName} (passager)`}</span>}
               <span className="text-sm text-gray-500">Échéance : {formatDate(detail.dueDate)}</span>
             </div>
 
@@ -409,12 +423,29 @@ export default function InvoicesPage() {
                 <option value="quotation">Devis</option>
                 <option value="invoice">Facture</option>
               </select>
-              <select className="input-field" required value={form.client} onChange={(e) => setForm({ ...form, client: e.target.value })}>
+              <select
+                className="input-field"
+                value={form.clientName ? '__passager__' : form.client}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '__passager__') setForm({ ...form, client: '', clientName: form.clientName || 'Passager' });
+                  else setForm({ ...form, client: v, clientName: '' });
+                }}
+              >
                 <option value="">Sélectionner un client...</option>
+                <option value="__passager__">Passager (client occasionnel)</option>
                 {clients.map((c) => <option key={c._id} value={c._id}>{c.companyName}</option>)}
               </select>
               <input type="date" lang="fr-FR" className="input-field" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} required />
             </div>
+
+            {form.clientName ? (
+              <div className="sm:max-w-xs">
+                <label className="block text-sm mb-1">Nom du client passager</label>
+                <input type="text" className="input-field" placeholder="Nom / société du passager" value={form.clientName}
+                  onChange={(e) => setForm({ ...form, clientName: e.target.value })} />
+              </div>
+            ) : null}
 
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <div className="bg-gray-50 dark:bg-gray-800 p-3 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
