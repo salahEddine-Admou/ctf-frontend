@@ -22,6 +22,8 @@ export const STATUS_COLORS = {
   cancelled: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
   approved: 'bg-green-100 text-green-800',
   rejected: 'bg-red-100 text-red-800',
+  order: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200',
+  invoiced: 'bg-green-100 text-green-800',
 };
 
 export const STATUS_LABELS = {
@@ -48,6 +50,8 @@ export const STATUS_LABELS = {
   cancelled: 'Annulé',
   approved: 'Approuvé',
   rejected: 'Rejeté',
+  order: 'Bon de commande',
+  invoiced: 'Facturé',
 };
 
 export const CONTRACT_STATUS = {

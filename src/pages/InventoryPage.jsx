@@ -286,9 +286,17 @@ export default function InventoryPage() {
               ) : (
                 <div>
                   <label className="text-sm font-medium">Client</label>
-                  <select className="input-field mt-1" value={movement.client}
-                    onChange={(e) => setMovement({ ...movement, client: e.target.value, partnerName: clients.find((c) => c._id === e.target.value)?.companyName || '' })}>
+                  <select className="input-field mt-1" value={movement.client || (movement.partnerName === 'Passager' ? '__passager__' : '')}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === '__passager__') {
+                        setMovement({ ...movement, client: '', partnerName: 'Passager' });
+                      } else {
+                        setMovement({ ...movement, client: v, partnerName: clients.find((c) => c._id === v)?.companyName || '' });
+                      }
+                    }}>
                     <option value="">—</option>
+                    <option value="__passager__">Passager (client occasionnel)</option>
                     {clients.map((c) => <option key={c._id} value={c._id}>{c.companyName}</option>)}
                   </select>
                 </div>
@@ -335,7 +343,7 @@ function Field({ label, value, onChange, required, type = 'text' }) {
       <label className="text-sm font-medium flex items-center gap-1">
         {label}{required && <span className="text-nfc-red">*</span>}
       </label>
-      <input type={type} className="input-field mt-1" required={required} value={value}
+      <input type={type} lang="fr-FR" className="input-field mt-1" required={required} value={value}
         onChange={(e) => onChange(e.target.value)} />
     </div>
   );

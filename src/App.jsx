@@ -29,6 +29,8 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    // Force le format de date jj/mm/aaaa (français) sur les sélecteurs de date natifs
+    document.documentElement.lang = language === 'ar' ? 'ar' : 'fr-FR';
   }, [darkMode, language]);
 
   useEffect(() => {

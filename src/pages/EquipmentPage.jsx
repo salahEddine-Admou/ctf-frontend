@@ -516,7 +516,7 @@ export default function EquipmentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="text-xs font-medium text-gray-500 mb-1 block">Date d'installation</label>
-                <input type="date" className="input-field" value={form.installationDate} onChange={(e) => setForm({ ...form, installationDate: e.target.value })} />
+                <input type="date" lang="fr-FR" className="input-field" value={form.installationDate} onChange={(e) => setForm({ ...form, installationDate: e.target.value })} />
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 mb-1 block">Quantité</label>

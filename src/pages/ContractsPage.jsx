@@ -289,9 +289,9 @@ export default function ContractsPage() {
           <textarea className="input-field min-h-[80px]" placeholder="Détails, prestations souhaitées..."
             value={requestForm.description} onChange={(e) => setRequestForm({ ...requestForm, description: e.target.value })} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input type="date" className="input-field" value={requestForm.desiredStartDate}
+            <input type="date" lang="fr-FR" className="input-field" value={requestForm.desiredStartDate}
               onChange={(e) => setRequestForm({ ...requestForm, desiredStartDate: e.target.value })} />
-            <input type="date" className="input-field" value={requestForm.desiredEndDate}
+            <input type="date" lang="fr-FR" className="input-field" value={requestForm.desiredEndDate}
               onChange={(e) => setRequestForm({ ...requestForm, desiredEndDate: e.target.value })} />
           </div>
           <button type="submit" className="btn-primary w-full">{t('contracts.submitRequest')}</button>
@@ -308,8 +308,8 @@ export default function ContractsPage() {
               </select>
               <input className="input-field" required placeholder="Titre" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" className="input-field" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-                <input type="date" className="input-field" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                <input type="date" lang="fr-FR" className="input-field" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                <input type="date" lang="fr-FR" className="input-field" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               </div>
               <input type="number" className="input-field" required placeholder="Montant MAD" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
               <div>
@@ -331,8 +331,8 @@ export default function ContractsPage() {
             <div className="space-y-3 text-sm">
               <p><strong>{approveReq?.title}</strong> — {approveReq?.client?.companyName}</p>
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" className="input-field" value={approveForm.startDate} onChange={(e) => setApproveForm({ ...approveForm, startDate: e.target.value })} />
-                <input type="date" className="input-field" value={approveForm.endDate} onChange={(e) => setApproveForm({ ...approveForm, endDate: e.target.value })} />
+                <input type="date" lang="fr-FR" className="input-field" value={approveForm.startDate} onChange={(e) => setApproveForm({ ...approveForm, startDate: e.target.value })} />
+                <input type="date" lang="fr-FR" className="input-field" value={approveForm.endDate} onChange={(e) => setApproveForm({ ...approveForm, endDate: e.target.value })} />
               </div>
               <input type="number" className="input-field" placeholder="Montant MAD" value={approveForm.amount} onChange={(e) => setApproveForm({ ...approveForm, amount: e.target.value })} />
               <button type="button" onClick={submitApprove} className="btn-primary w-full">Créer le contrat et notifier le client</button>
