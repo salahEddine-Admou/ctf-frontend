@@ -2,14 +2,9 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Flame, UserCircle, Wrench, Building2 } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import { login, clearError } from '../../store/slices/authSlice';
 import Logo from '../../components/ui/Logo';
-const DEMO_ACCOUNTS = [
-  { key: 'admin', label: 'Admin', email: 'admin@nfc-crm.ma', password: 'admin123', icon: UserCircle, color: 'bg-red-50 border-red-200 text-nfc-red', hint: 'Propriétaire plateforme' },
-  { key: 'client', label: 'Client', email: 'client@nfc-crm.ma', password: 'client123', icon: Building2, color: 'bg-blue-50 border-blue-200 text-blue-700', hint: 'Maroc Telecom' },
-  { key: 'technician', label: 'Technicien', email: 'technicien@nfc-crm.ma', password: 'tech123', icon: Wrench, color: 'bg-orange-50 border-orange-200 text-orange-700' },
-];
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -22,11 +17,6 @@ export default function LoginPage() {
     e.preventDefault();
     const result = await dispatch(login(form));
     if (login.fulfilled.match(result)) navigate('/');
-  };
-
-  const fillDemo = (account) => {
-    setForm({ email: account.email, password: account.password });
-    dispatch(clearError());
   };
 
   return (
@@ -104,35 +94,6 @@ export default function LoginPage() {
               {loading ? t('common.loading') : t('auth.loginButton')}
             </button>
           </form>
-
-          <div className="mt-8">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('auth.demoAccounts')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {DEMO_ACCOUNTS.map((acc) => {
-                const Icon = acc.icon;
-                const active = form.email === acc.email;
-                return (
-                  <button
-                    key={acc.key}
-                    type="button"
-                    onClick={() => fillDemo(acc)}
-                    className={`text-left p-3 rounded-lg border transition-all hover:shadow-md ${
-                      active ? 'ring-2 ring-nfc-red border-nfc-red' : acc.color
-                    } dark:bg-gray-800 dark:border-gray-600`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span className="font-semibold text-sm">{acc.label}</span>
-                    </div>
-                    <p className="text-[10px] font-mono truncate">{acc.email}</p>
-                    <p className="text-[10px] text-gray-500 font-mono">{acc.password}</p>
-                    {acc.hint && <p className="text-[10px] text-gray-400 mt-0.5">{acc.hint}</p>}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-3 text-[11px] text-gray-400 text-center">{t('auth.demoHint')}</p>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-[10px] uppercase tracking-wide text-gray-400 text-center mb-3">
